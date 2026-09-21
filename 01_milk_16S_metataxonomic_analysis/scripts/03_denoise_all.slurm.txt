@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=denoise_all
+#SBATCH --partition=k2-lowpri
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=96G
+#SBATCH --time=2-12:00:00
+#SBATCH --output=logs/denoise_all_%j.out
+#SBATCH --error=logs/denoise_all_%j.err
+
+set -euo pipefail
+
+module load apps/anaconda3/2024.10
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate qiime2-amplicon-2024.10
+
+cd /mnt/scratch2/users/ID/16s_milk/qiime2
+
+mkdir -p logs
+
+qiime dada2 denoise-ccs \
+    --i-demultiplexed-seqs demux_all.qza \
+    --p-front AGRGTTYGATYMTGGCTCAG \
+    --p-adapter RGYTACCTTGTTACGACTT \
+    --p-min-len 1000 \
+    --p-max-len 1600 \
+    --p-max-ee 2 \
+    --p-pooling-method pseudo \
+    --p-n-threads 24 \
+    --o-table table_all.qza \
+    --o-representative-sequences repseq_all.qza \
+    --o-denoising-stats stats_all.qza
